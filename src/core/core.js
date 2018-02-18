@@ -5,8 +5,6 @@
 import axios from 'axios';
 import defaultsDeep from 'lodash/defaultsDeep';
 import Defaults from './defaults';
-import Debugger from './../debug/debugger';
-import Logger from './../debug/logger';
 
 class Core {
   constructor (config) {
@@ -43,13 +41,21 @@ class Core {
 
     this.setCurrentRoute(this.config.defaultRoute);
 
-    this.initializeDebugger();
-
-    this.initializeLogger();
-
     this.resetRequestData();
 
     this.defineCustomRoutes();
+
+    this.registerServices();
+  }
+
+  /**
+   * Register a service to use on rapid.
+   *
+   * @param {string} serviceName
+   * @param {Object|function} service
+   */
+  use (serviceName = '', service) {
+    this.services[serviceName] = service.register(this);
   }
 
   /**
@@ -60,19 +66,25 @@ class Core {
     ['baseURL', 'modelName', 'routeDelimeter', 'caseSensitive'].forEach(setter => this[setter] = this.config[setter]);
   }
 
-  /**
-   * Initialze the debugger if debug is set to true.
-   */
-  initializeDebugger () {
-    this.debugger = this.config.debug ? new Debugger(this) : false;
-  }
+  // /**
+  //  * Initialze the debugger if debug is set to true.
+  //  */
+  // initializeDebugger () {
+  //   this.debugger = this.config.debug ? new Debugger(this) : false;
+  // }
 
-  /**
-   * Initialze the debugger if debug is set to true.
-   */
-  initializeLogger () {
-    this.logger = this.config.debug ? Logger : false;
-  }
+  // /**
+  //  * Initialze the debugger if debug is set to true.
+  //  */
+  // initializeLogger () {
+  //   this.logger = this.config.debug ? Logger : false;
+  // }
+
+  // set debug (val) {
+  //   if (this.config.debug) {
+  //     this.logger.warn('debug mode must explicitly be turned on via the constructor in config.debug');
+  //   }
+  // }
 
   /**
    * Initialize the API.
@@ -115,12 +127,6 @@ class Core {
   /**
    * Setters and Getters
    */
-
-  set debug (val) {
-    if (this.config.debug) {
-      this.logger.warn('debug mode must explicitly be turned on via the constructor in config.debug');
-    }
-  }
 
   get collection () {
     this.setCurrentRoute('collection');
